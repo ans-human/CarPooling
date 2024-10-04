@@ -39,6 +39,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void addVehicle(User user, Vehicle vehicle) {
         UserValidator.validateUser(user);
+        UserValidator.validateUsersCollection(users);
         UserValidator.validateUserExists(users, user.getId());
         vehicleService.addVehicle(vehicle);
         user.getVehicles().add(vehicle);
@@ -77,6 +78,7 @@ public class UserServiceImpl implements UserService {
 
     public void removeVehicle(User user, Vehicle vehicle) {
         UserValidator.validateUser(user);
+        UserValidator.validateUsersCollection(users);
         UserValidator.validateUserExists(users, user.getId());
         vehicleService.removeVehicle(vehicle);
         user.getVehicles().remove(vehicle);
