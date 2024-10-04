@@ -13,11 +13,11 @@ import java.util.List;
 @Singleton
 @Slf4j
 public class NotificationServiceImpl implements NotificationService {
-    private final UserServiceImpl userService;
+    private final UserService userService;
     private final List<RideObserver> observers = new ArrayList<>();
 
     @Inject
-    public NotificationServiceImpl(UserServiceImpl userService) {
+    public NotificationServiceImpl(UserService userService) {
         this.userService = userService;
     }
 
@@ -34,7 +34,7 @@ public class NotificationServiceImpl implements NotificationService {
         User driver = ride.getDriver();
         log.info("Ride ended for driver: {}", driver.getName());
 
-        for (User user : userService.getUsers()) {
+        for (User user : userService.getAllUsers()) {
             if (user.getRidesTaken() != null && user.getRidesTaken().contains(ride)) {
                 log.info("Ride ended for ride taker: {}", user.getName());
             }

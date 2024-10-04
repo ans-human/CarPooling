@@ -10,25 +10,27 @@ import org.example.strategies.RideSelectionStrategy;
 import org.example.validators.RideValidator;
 import org.example.validators.UserValidator;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
 
 @Getter
 @Slf4j
 public class RideServiceImpl implements RideService {
-    private final UserServiceImpl userService;
+    private final UserService userService;
+    private final VehicleService vehicleService;
     private final List<Ride> availableRides;
     private final Lock lock = new ReentrantLock();
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final NotificationService notificationService;
 
     @Inject
-    public RideServiceImpl(UserServiceImpl userService, List<Ride> availableRides, NotificationService notificationService) {
+    public RideServiceImpl(UserService userService, VehicleService vehicleService, List<Ride> availableRides, NotificationService notificationService) {
         this.userService = userService;
+        this.vehicleService = vehicleService;
         this.availableRides = availableRides;
         this.notificationService = notificationService;
     }
@@ -43,13 +45,9 @@ public class RideServiceImpl implements RideService {
                 .findFirst()
                 .orElse(null);
 
-        if (!RideValidator.isValidVehicle(vehicle, vehicleModel, registrationNumber, userName)) {
-            return;
-        }
+        RideValidator.validateNonNull(vehicle, vehicleModel, registrationNumber, userName);
 
-        if (RideValidator.hasExistingRide(user, vehicle)) {
-            return;
-        }
+        RideValidator.noExistingRide(user, vehicle);
 
         Ride ride = Ride.builder()
                 .driver(user)
@@ -114,7 +112,7 @@ public class RideServiceImpl implements RideService {
     }
 
     public void printRideState() {
-        List<User> users = userService.getUsers();
+        Collection<User> users = userService.getAllUsers();
 
         for (User user : users) {
             long ridesTaken = user.getRidesTaken() == null ? 0 : user.getRidesTaken().stream().filter(ride -> !ride.isActive()).count();
@@ -124,9 +122,26 @@ public class RideServiceImpl implements RideService {
     }
 
     public void printTotalRides() {
-        int totalRidesOffered = userService.getTotalRidesOffered();
-        int totalRidesTaken = userService.getTotalRidesTaken();
+        int totalRidesOffered = getTotalRidesOffered();
+        int totalRidesTaken = getTotalRidesTaken();
         System.out.println("Total Rides Offered: " + totalRidesOffered);
         System.out.println("Total Rides Taken: " + totalRidesTaken);
+    }
+
+    public void printAllOfferedRides() {
+        System.out.println("All Offered Rides: ");
+        availableRides.forEach(System.out::println);
+    }
+
+    private int getTotalRidesOffered() {
+        return userService.getAllUsers().stream()
+                .mapToInt(user -> user.getRidesOffered().size())
+                .sum();
+    }
+
+    private int getTotalRidesTaken() {
+        return userService.getAllUsers().stream()
+                .mapToInt(user -> user.getRidesTaken().size())
+                .sum();
     }
 }

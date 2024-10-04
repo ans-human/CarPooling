@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @AllArgsConstructor
@@ -15,9 +15,9 @@ public class User {
     private String name;
     private String gender;
     private Integer age;
-    private List<Vehicle> vehicles;
-    private List<Ride> ridesOffered;
-    private List<Ride> ridesTaken;
+    private Set<Vehicle> vehicles;
+    private Set<Ride> ridesOffered;
+    private Set<Ride> ridesTaken;
 
     @Override
     public String toString() {

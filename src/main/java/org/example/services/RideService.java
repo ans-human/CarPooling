@@ -1,7 +1,6 @@
 package org.example.services;
 
 import org.example.models.Ride;
-import org.example.observers.RideObserver;
 import org.example.strategies.RideSelectionStrategy;
 
 import java.util.List;
@@ -19,4 +18,6 @@ public interface RideService {
     List<Ride> getAvailableRides();
 
     void printTotalRides();
+
+    void printAllOfferedRides();
 }

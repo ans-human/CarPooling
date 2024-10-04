@@ -2,6 +2,7 @@ package org.example.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -9,14 +10,25 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Ride {
     private User driver;
+
+    @EqualsAndHashCode.Include
     private Vehicle vehicle;
+
+    @EqualsAndHashCode.Include
     private String origin;
+
+    @EqualsAndHashCode.Include
     private String destination;
+
+    @EqualsAndHashCode.Include
+    private boolean active;
+
     private int offeredSeats;
     private int availableSeats;
-    private boolean active;
+
 
     public void endRide() {
         this.active = false;
@@ -25,10 +37,6 @@ public class Ride {
 
     public void bookSeats(int seats) {
         this.availableSeats -= seats;
-    }
-
-    public void releaseOneSeat() {
-        this.availableSeats++;
     }
 }
 

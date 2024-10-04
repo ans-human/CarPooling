@@ -3,7 +3,7 @@ package org.example.services;
 import org.example.models.User;
 import org.example.models.Vehicle;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface UserService {
 
@@ -17,5 +17,5 @@ public interface UserService {
 
     User getUserById(String Id);
 
-    List<User> getAllUsers();
+    Collection<User> getAllUsers();
 }

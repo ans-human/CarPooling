@@ -1,37 +1,47 @@
 package org.example.services;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.models.User;
 import org.example.models.Vehicle;
 import org.example.validators.UserValidator;
 
 import javax.inject.Singleton;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Singleton
 public class UserServiceImpl implements UserService {
-    private List<User> users;
+    private final Map<String, User> users;
+    private final VehicleService vehicleService;
 
     @Inject
-    public UserServiceImpl(List<User> users) {
-        this.users = users;
+    public UserServiceImpl(List<User> userList, VehicleService vehicleService) {
+        this.users = new HashMap<>();
+        for (User user : userList) {
+            users.put(user.getId(), user);
+        }
+        this.vehicleService = vehicleService;
     }
 
-    public void addVehicle(User user, Vehicle vehicle) {
-        UserValidator.validateUser(user);
-        UserValidator.validateUserExists(users, user);
-        user.getVehicles().add(vehicle);
-    }
-
+    @Override
     public void addUser(User user) {
         UserValidator.validateUser(user);
-        UserValidator.validateUserNotPresent(users, user);
-        users.add(user);
+        UserValidator.validateUserNotPresent(users.keySet(), user.getId());
+        users.put(user.getId(), user);
         log.info("User: {} added successfully!", user.getId());
+    }
+
+    @Override
+    public void addVehicle(User user, Vehicle vehicle) {
+        UserValidator.validateUser(user);
+        UserValidator.validateUserExists(users, user.getId());
+        vehicleService.addVehicle(vehicle);
+        user.getVehicles().add(vehicle);
     }
 
     public void addUsers(List<User> users) {
@@ -40,54 +50,36 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    public User getUserById(String name) {
-        UserValidator.validateUsersList(users);
-
-        return users.stream()
-                .filter(user -> user.getId().equals(name))
-                .findFirst()
-                .orElse(null);
+    public User getUserById(String id) {
+        UserValidator.validateUsersCollection(users);
+        UserValidator.validateUserExists(users, id);
+        return users.get(id);
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return users;
+    public Collection<User> getAllUsers() {
+        UserValidator.validateUsersCollection(users);
+        return users.values();
     }
 
-    public List<User> getUsers() {
-        UserValidator.validateUsersList(users);
-        return users;
-    }
-
-    public int getTotalRidesOffered() {
-        return users.stream()
-                .mapToInt(user -> user.getRidesOffered().size())
-                .sum();
-    }
-
-    public int getTotalRidesTaken() {
-        return users.stream()
-                .mapToInt(user -> user.getRidesTaken().size())
-                .sum();
-    }
-
-    public List<Vehicle> getVehicles(User user) {
+    public Set<Vehicle> getVehicles(User user) {
         UserValidator.validateUser(user);
         return user.getVehicles();
     }
 
     public void removeUser(User user) {
         UserValidator.validateUser(user);
-        UserValidator.validateUsersList(users);
-        UserValidator.validateUserExists(users, user);
-        users.remove(user);
+        UserValidator.validateUsersCollection(users);
+        UserValidator.validateUserExists(users, user.getId());
+        users.remove(user.getId());
         log.info("User: {} removed successfully!", user.getId());
     }
 
     public void removeVehicle(User user, Vehicle vehicle) {
         UserValidator.validateUser(user);
-        UserValidator.validateUserExists(users, user);
+        UserValidator.validateUserExists(users, user.getId());
+        vehicleService.removeVehicle(vehicle);
         user.getVehicles().remove(vehicle);
-        log.info("Vehicle: {} - {} removed successfully!", vehicle.getModel(), vehicle.getNumber());
+        log.info("Vehicle: {} removed from user: {}", vehicle.getModel(), user.getId());
     }
 }
